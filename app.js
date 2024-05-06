@@ -82,6 +82,41 @@ app.put("/students/:_id", async (req, res) => {
   }
 });
 
+// patch要用！
+// 由於req.body的資料格式，不適合存進資料庫，所以必須轉換成適合更新進資料庫的格式
+class NewData {
+  constructor() {}
+  setProperty(key, value) {
+    if (key !== "merit" && key !== "other") {
+      this[key] = value;
+    } else {
+      this[`scholarship.${key}`] = value;
+    }
+  }
+}
+
+// patch更新(修改)學生資料
+app.patch("/students/:_id", async (req, res) => {
+  try {
+    let { _id } = req.params;
+    let newObject = new NewData();
+    for (let property in req.body) {
+      newObject.setProperty(property, req.body[property]);
+    }
+    // console.log(req.body);
+    // console.log(newObject);
+    let newData = await Student.findOneAndUpdate({ _id }, newObject, {
+      new: true,
+      runValidators: true,
+      // 不能寫overwrite: true，否則原本資料會全部被取代成新的資料(不管新舊各自的項目為何)
+    });
+    res.send({ msg: "成功更新學生資料！", updatedData: newData });
+  } catch (e) {
+    // console.log(e);
+    res.status(400).send(e);
+  }
+});
+
 app.listen(3000, () => {
   console.log("伺服器正在聆聽port 3000");
 });
