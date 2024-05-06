@@ -63,6 +63,25 @@ app.post("/students", async (req, res) => {
   }
 });
 
+// put更新(修改)學生資料
+app.put("/students/:_id", async (req, res) => {
+  try {
+    let { _id } = req.params;
+    let { name, age, major, merit, other } = req.body;
+    let newData = await Student.findOneAndUpdate(
+      { _id },
+      { name, age, major, scholarship: { merit, other } },
+      { new: true, runValidators: true, overwrite: true }
+      // 因為HTTP put request要求客戶端提供所有數據
+      // 所以我們需要根據客戶端提供的數據，來更新資料庫內的資料
+    );
+    res.send({ msg: "成功更新學生資料！", updatedData: newData });
+  } catch (e) {
+    // console.log(e);
+    res.status(400).send(e);
+  }
+});
+
 app.listen(3000, () => {
   console.log("伺服器正在聆聽port 3000");
 });
