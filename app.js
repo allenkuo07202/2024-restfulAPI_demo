@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const Student = require("./models/student");
-const cors = require("cors");
 
 mongoose
   .connect("mongodb://localhost:27017/exampleDB")
@@ -17,26 +16,32 @@ app.set("view engine", "ejs");
 // post要用！
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 
-// 獲得所有學生的資料
+// 獲得所有學生的資料(網頁版)
 app.get("/students", async (req, res) => {
   try {
     let studentData = await Student.find({}).exec();
-    return res.send(studentData);
+    // return res.send(studentData);
+    return res.render("students", { studentData });
   } catch (e) {
     return res.status(500).send("尋找資料時發生錯誤...");
   }
 });
 
-// 獲得特定的學生資料(修改，使程式碼簡潔一點)
+// 獲得特定的學生資料(網頁版)
 app.get("/students/:_id", async (req, res) => {
   let { _id } = req.params;
   try {
     let foundStudent = await Student.findOne({ _id }).exec();
-    return res.send(foundStudent);
+    if (foundStudent != null) {
+      return res.render("student-page", { foundStudent });
+    } else {
+      return res.status(400).render("student-not-found");
+    }
+    // return res.send(foundStudent);
   } catch (e) {
-    return res.status(500).send("尋找資料時發生錯誤...");
+    // return res.status(500).send("尋找資料時發生錯誤...");
+    return res.status(400).render("student-not-found");
   }
 });
 
