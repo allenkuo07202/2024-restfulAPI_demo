@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= foundStudent.name %>的頁面</title>
+    <title>Document</title>
     <meta name="author" content="Allen Kuo" />
     <style>
       table,
@@ -14,29 +14,30 @@
     </style>
   </head>
   <body>
+    <h1>成功更新學生資料！！</h1>
+    <p>以下為成功更新學生的資料：</p>
     <table>
       <tr>
         <td>學生ID</td>
-        <td><%= foundStudent._id %></td>
+        <td><%= newData._id %></td>
       </tr>
       <tr>
         <td>名稱</td>
-        <td><%= foundStudent.name %></td>
+        <td><%= newData.name %></td>
       </tr>
       <tr>
         <td>年齡</td>
-        <td><%= foundStudent.age %></td>
+        <td><%= newData.age %></td>
       </tr>
       <tr>
         <td>merit獎學金</td>
-        <td><%= foundStudent.scholarship.merit %></td>
+        <td><%= newData.scholarship.merit %></td>
       </tr>
       <tr>
         <td>other獎學金</td>
-        <td><%= foundStudent.scholarship.other %></td>
+        <td><%= newData.scholarship.other %></td>
       </tr>
     </table>
     <a href="/students">回到首頁</a>
-    <a href="/students/<%= foundStudent._id %>/edit">更新學生資料</a>
   </body>
 </html>
