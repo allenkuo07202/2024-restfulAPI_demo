@@ -28,6 +28,11 @@ app.get("/students", async (req, res) => {
   }
 });
 
+// 給一個可以新增新學生的頁面(網頁版)
+app.get("/students/new", (req, res) => {
+  return res.render("new-student-form");
+});
+
 // 獲得特定的學生資料(網頁版)
 app.get("/students/:_id", async (req, res) => {
   let { _id } = req.params;
@@ -45,28 +50,29 @@ app.get("/students/:_id", async (req, res) => {
   }
 });
 
-// 創建一個新的學生
+// 創建一個新的學生(網頁版)
 app.post("/students", async (req, res) => {
   try {
-    let { name, age, major, merit, other } = req.body;
-    //   console.log(name, age, major, merit, other);
+    let { name, age, merit, other } = req.body;
+
     let newStudent = new Student({
       name,
       age,
-      major,
       scholarship: {
         merit,
         other,
       },
     });
     let savedStudent = await newStudent.save();
-    return res.send({
-      msg: "資料儲存成功",
-      savedObject: savedStudent,
-    });
+    // return res.send({
+    //   msg: "資料儲存成功",
+    //   savedObject: savedStudent,
+    // });
+    return res.render("student-save-success", { savedStudent });
   } catch (e) {
     // return res.status(500).send("儲存資料時發生錯誤...");
-    return res.status(400).send(e.message);
+    // return res.status(400).send(e.message);
+    return res.status(400).render("student-save-fail");
   }
 });
 
