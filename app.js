@@ -20,72 +20,25 @@ app.use(express.urlencoded({ extended: true }));
 // put網頁版要用！
 app.use(methodOverride("_method"));
 
-// Middleware寫法1
-function myMiddleware(req, res, next) {
-  console.log("正在執行myMiddleware...");
-  next();
-}
-
-// 獲得所有學生的資料(網頁版)
-app.get("/students", myMiddleware, async (req, res) => {
+// 獲得所有學生的資料(網頁版)(用Middleware改寫)
+app.get("/students", async (req, res, next) => {
   try {
     let studentData = await Student.find({}).exec();
     // return res.send(studentData);
     return res.render("students", { studentData });
   } catch (e) {
-    return res.status(500).send("尋找資料時發生錯誤...");
+    // return res.status(500).send("尋找資料時發生錯誤...");
+    next(e); // 若有錯誤訊息，則next會將它往下傳，一直到有Middleware接住為止！
   }
 });
-
-// Middleware寫法2
-app.get(
-  "/students",
-  (req, res, next) => {
-    console.log("正在執行myMiddleware...");
-    next();
-  },
-  async (req, res) => {
-    try {
-      let studentData = await Student.find({}).exec();
-      // return res.send(studentData);
-      return res.render("students", { studentData });
-    } catch (e) {
-      return res.status(500).send("尋找資料時發生錯誤...");
-    }
-  }
-);
-
-// 若要執行多個Middleware
-app.get(
-  "/students",
-  [
-    (req, res, next) => {
-      console.log("正在執行myMiddleware...");
-      next();
-    },
-    (req, res, next) => {
-      console.log("正在執行myMiddleware2...");
-      next();
-    },
-  ],
-  async (req, res) => {
-    try {
-      let studentData = await Student.find({}).exec();
-      // return res.send(studentData);
-      return res.render("students", { studentData });
-    } catch (e) {
-      return res.status(500).send("尋找資料時發生錯誤...");
-    }
-  }
-);
 
 // 給一個可以新增新學生的頁面(網頁版)
 app.get("/students/new", (req, res) => {
   return res.render("new-student-form");
 });
 
-// 獲得特定的學生資料(網頁版)
-app.get("/students/:_id", async (req, res) => {
+// 獲得特定的學生資料(網頁版)(用Middleware改寫)
+app.get("/students/:_id", async (req, res, next) => {
   let { _id } = req.params;
   try {
     let foundStudent = await Student.findOne({ _id }).exec();
@@ -97,12 +50,13 @@ app.get("/students/:_id", async (req, res) => {
     // return res.send(foundStudent);
   } catch (e) {
     // return res.status(500).send("尋找資料時發生錯誤...");
-    return res.status(400).render("student-not-found");
+    // return res.status(400).render("student-not-found");
+    next(e);
   }
 });
 
-// 回傳一個包含可以用來修改學生資料的表格的網頁(網頁版)
-app.get("/students/:_id/edit", async (req, res) => {
+// 回傳一個包含可以用來修改學生資料的表格的網頁(網頁版)(用Middleware改寫)
+app.get("/students/:_id/edit", async (req, res, next) => {
   let { _id } = req.params;
   try {
     let foundStudent = await Student.findOne({ _id }).exec();
@@ -114,7 +68,8 @@ app.get("/students/:_id/edit", async (req, res) => {
     // return res.send(foundStudent);
   } catch (e) {
     // return res.status(500).send("尋找資料時發生錯誤...");
-    return res.status(400).render("student-not-found");
+    // return res.status(400).render("student-not-found");
+    next(e);
   }
 });
 
@@ -210,6 +165,12 @@ app.delete("/students/:_id", async (req, res) => {
     console.log(e);
     return res.status(500).send("無法刪除學生資料");
   }
+});
+
+app.use((err, req, res, next) => {
+  console.log("正在使用這個midleware...");
+  // return res.status(400).send(err); // 直接回傳錯誤訊息給使用者
+  return res.status(400).render("error"); // 渲染網頁給使用者
 });
 
 app.listen(3000, () => {
