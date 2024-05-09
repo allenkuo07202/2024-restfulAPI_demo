@@ -20,8 +20,14 @@ app.use(express.urlencoded({ extended: true }));
 // put網頁版要用！
 app.use(methodOverride("_method"));
 
+// Middleware寫法1
+function myMiddleware(req, res, next) {
+  console.log("正在執行myMiddleware...");
+  next();
+}
+
 // 獲得所有學生的資料(網頁版)
-app.get("/students", async (req, res) => {
+app.get("/students", myMiddleware, async (req, res) => {
   try {
     let studentData = await Student.find({}).exec();
     // return res.send(studentData);
@@ -30,6 +36,48 @@ app.get("/students", async (req, res) => {
     return res.status(500).send("尋找資料時發生錯誤...");
   }
 });
+
+// Middleware寫法2
+app.get(
+  "/students",
+  (req, res, next) => {
+    console.log("正在執行myMiddleware...");
+    next();
+  },
+  async (req, res) => {
+    try {
+      let studentData = await Student.find({}).exec();
+      // return res.send(studentData);
+      return res.render("students", { studentData });
+    } catch (e) {
+      return res.status(500).send("尋找資料時發生錯誤...");
+    }
+  }
+);
+
+// 若要執行多個Middleware
+app.get(
+  "/students",
+  [
+    (req, res, next) => {
+      console.log("正在執行myMiddleware...");
+      next();
+    },
+    (req, res, next) => {
+      console.log("正在執行myMiddleware2...");
+      next();
+    },
+  ],
+  async (req, res) => {
+    try {
+      let studentData = await Student.find({}).exec();
+      // return res.send(studentData);
+      return res.render("students", { studentData });
+    } catch (e) {
+      return res.status(500).send("尋找資料時發生錯誤...");
+    }
+  }
+);
 
 // 給一個可以新增新學生的頁面(網頁版)
 app.get("/students/new", (req, res) => {
